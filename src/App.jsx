@@ -1,7 +1,7 @@
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import PageNotFound from "./pages/PageNotFound";
-import Board from "./components/Board";
+import SingleBoardPage from "./pages/SingleBoardPage";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -12,9 +12,8 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <HomePage />,
-        // path: "board",
-        // element: <Board />,
       },
+      { path: "/boards/:id", element: <SingleBoardPage /> },
     ],
   },
   {

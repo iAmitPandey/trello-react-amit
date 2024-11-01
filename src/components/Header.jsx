@@ -16,7 +16,7 @@ const Header = () => {
       >
         <li>
           <Link to={"/"}>
-            <p>Trelo</p>
+            <p>Trello</p>
           </Link>
         </li>
       </ul>
