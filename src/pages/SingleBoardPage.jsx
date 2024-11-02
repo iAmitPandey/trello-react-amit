@@ -70,7 +70,7 @@ const SingleBoardPage = () => {
       setLoading(false);
     };
     fetchData();
-  }, [id]);
+  }, []);
 
   const archiveList = async (listId) => {
     try {

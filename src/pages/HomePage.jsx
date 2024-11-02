@@ -8,11 +8,11 @@ const HomePage = () => {
   const [boards, setBoards] = useState(null);
 
   const url = import.meta.env.VITE_URL;
-  const treloToken = import.meta.env.VITE_TRELLO_TOKEN;
+  const trelloToken = import.meta.env.VITE_TRELLO_TOKEN;
   const key = import.meta.env.VITE_API_KEY;
   const fetchData = async () => {
     const res = await axios.get(
-      ` ${url}/members/me/boards?key=${key}&token=${treloToken}`
+      ` ${url}/members/me/boards?key=${key}&token=${trelloToken}`
     );
     const data = res.data;
     setBoards(data);
@@ -27,7 +27,7 @@ const HomePage = () => {
       const res = await axios.post(
         `${url}/boards/?name=${encodeURIComponent(
           name
-        )}&key=${key}&token=${treloToken}`
+        )}&key=${key}&token=${trelloToken}`
       );
       // setBoards((prev) => [...prev, { name }]);
       setBoards((prev) => [...prev, res.data]);

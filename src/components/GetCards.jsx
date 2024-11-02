@@ -17,7 +17,7 @@ const GetCards = ({ list }) => {
 
   useEffect(() => {
     getCards(list.id);
-  }, [cards]);
+  }, []);
 
   const getCards = async (id) => {
     try {
@@ -45,6 +45,7 @@ const GetCards = ({ list }) => {
   const deleteCard = async (id) => {
     try {
       await axios.delete(`${url}/cards/${id}?key=${key}&token=${trelloToken}`);
+      setCards((prev) => prev.filter((card) => card.id !== id));
     } catch (error) {
       console.log("Error in deletion", error);
     }

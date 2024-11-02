@@ -1,4 +1,4 @@
-import { Box, Button, Card, HStack, Input } from "@chakra-ui/react";
+import { Box, Button, Card, HStack, Input, Spinner } from "@chakra-ui/react";
 import {
   PopoverBody,
   PopoverContent,
@@ -6,28 +6,33 @@ import {
   PopoverTrigger,
 } from "./ui/popover";
 import { HiOutlinePlus } from "react-icons/hi";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
-import axios from "axios";
 import { MdDelete } from "react-icons/md";
+import axios from "axios";
+
 import ChecklistItem from "./ChecklistItem";
 
 const Checklist = ({ name, id }) => {
   const [open, setOpen] = useState(false);
   const [checkList, setCheckList] = useState([]);
   const [checkListName, setCheckListName] = useState("");
-  // const [items, setItems] = useState([]);
   const [addItem, setAddItem] = useState(false);
-
-  // useEffect(() => {
-  //   getCheckListItem();
-  // }, []);
+  const [itemName, setItemName] = useState("");
+  const [loading, setLoading] = useState({
+    fetch: false,
+    create: false,
+    deleteChecklist: null,
+    deleteItem: null,
+    addItem: false,
+  });
 
   const url = import.meta.env.VITE_URL;
   const treloToken = import.meta.env.VITE_TRELLO_TOKEN;
   const key = import.meta.env.VITE_API_KEY;
 
   const createCheckList = async () => {
+    setLoading((prev) => ({ ...prev, create: true }));
     try {
       await axios.post(
         `${url}/cards/${id}/checklists?name=${checkListName}&key=${key}&token=${treloToken}`
@@ -36,10 +41,13 @@ const Checklist = ({ name, id }) => {
       getCheckList();
     } catch (error) {
       console.log("Error creating checklist", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, create: false }));
     }
   };
 
   const getCheckList = async () => {
+    setLoading((prev) => ({ ...prev, fetch: true }));
     try {
       const res = await axios.get(
         `${url}/cards/${id}/checklists?key=${key}&token=${treloToken}`
@@ -47,6 +55,8 @@ const Checklist = ({ name, id }) => {
       setCheckList(res.data);
     } catch (error) {
       console.log("Error fetching checklists", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, fetch: false }));
     }
   };
 
@@ -57,49 +67,46 @@ const Checklist = ({ name, id }) => {
     }
   };
 
-  const deleteChecklist = async (id) => {
+  const deleteChecklist = async (checklistId) => {
+    setLoading((prev) => ({ ...prev, deleteChecklist: checklistId }));
     try {
       await axios.delete(
-        `${url}/checklists/${id}?key=${key}&token=${treloToken}`
+        `${url}/checklists/${checklistId}?key=${key}&token=${treloToken}`
       );
       getCheckList();
     } catch (error) {
-      console.log(error);
+      console.log("Error deleting checklist", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, deleteChecklist: null }));
     }
   };
 
-  const addItemInChecklist = async (id, name) => {
+  const addItemInChecklist = async (checklistId) => {
+    setLoading((prev) => ({ ...prev, addItem: true }));
     try {
-      const res = await axios.post(
-        `${url}/checklists/${id}/checkItems?name=${name}&key=${key}&token=${treloToken}`
-        //cards/${cardId}/checkItem/${checkItemId}?key=${apikey}&token=${apiToken}&state=${state}
+      await axios.post(
+        `${url}/checklists/${checklistId}/checkItems?name=${itemName}&key=${key}&token=${treloToken}`
       );
-      console.log(res);
+      setItemName("");
+      getCheckList();
     } catch (error) {
-      console.log(error);
+      console.log("Error adding item", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, addItem: false }));
     }
   };
 
-  // const getCheckListItem = async () => {
-  //   try {
-  //     const res = await axios.get(
-  //       `${url}/checklists/${id}/checkItems?key=${key}&token=${treloToken}`
-
-  //     );
-  //     setItems(res);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  const deleteChecklistItem = async (id, itemId) => {
+  const deleteChecklistItem = async (checklistId, itemId) => {
+    setLoading((prev) => ({ ...prev, deleteItem: itemId }));
     try {
       await axios.delete(
-        `${url}/checklists/${id}/checkItems/${itemId}?key=${key}&token=${treloToken}`
+        `${url}/checklists/${checklistId}/checkItems/${itemId}?key=${key}&token=${treloToken}`
       );
-      // getCheckListItem();
+      getCheckList();
     } catch (error) {
-      console.log(error);
+      console.log("Error deleting checklist item", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, deleteItem: null }));
     }
   };
 
@@ -112,33 +119,54 @@ const Checklist = ({ name, id }) => {
       </PopoverTrigger>
       <PopoverContent>
         <PopoverBody>
-          {checkList?.map((listItem) => (
-            <Box key={listItem.id}>
-              <HStack>
-                <Card.Root>
-                  <Card.Title>
-                    {listItem.name}
-                    <Button onClick={() => deleteChecklist(listItem.id)}>
-                      <MdDelete />
-                    </Button>
-                  </Card.Title>
-
-                  {addItem ? (
-                    <Card.Body>
-                      <ChecklistItem id={listItem.id} />
-                      <Button onClick={() => setAddItem(false)}>
-                        Add an item
+          {loading.fetch ? (
+            <Spinner size="lg" />
+          ) : (
+            checkList?.map((listItem) => (
+              <Box key={listItem.id}>
+                <HStack>
+                  <Card.Root>
+                    <Card.Title>
+                      {listItem.name}
+                      <Button
+                        onClick={() => deleteChecklist(listItem.id)}
+                        isLoading={loading.deleteChecklist === listItem.id}
+                      >
+                        <MdDelete />
                       </Button>
-                    </Card.Body>
-                  ) : (
-                    <Button onClick={() => setAddItem(true)}>
-                      Add an item
-                    </Button>
-                  )}
-                </Card.Root>
-              </HStack>
-            </Box>
-          ))}
+                    </Card.Title>
+
+                    {addItem ? (
+                      <Card.Body>
+                        <ChecklistItem id={listItem.id} />
+                        <Input
+                          placeholder="Enter an item"
+                          value={itemName}
+                          onChange={(e) => setItemName(e.target.value)}
+                          size="sm"
+                          mb="2"
+                        />
+                        <Button
+                          onClick={() => addItemInChecklist(listItem.id)}
+                          isLoading={loading.addItem}
+                        >
+                          Add
+                        </Button>
+                      </Card.Body>
+                    ) : (
+                      <Card.Body>
+                        <ChecklistItem id={listItem.id} />
+                        <Button onClick={() => setAddItem(true)}>
+                          Add an item
+                        </Button>
+                      </Card.Body>
+                    )}
+                  </Card.Root>
+                </HStack>
+              </Box>
+            ))
+          )}
+
           <Box mt="2">
             <Input
               placeholder="Enter checklist name"
@@ -152,6 +180,7 @@ const Checklist = ({ name, id }) => {
               colorScheme="blue"
               size="sm"
               leftIcon={<HiOutlinePlus />}
+              isLoading={loading.create}
             >
               <FaPlus />
               Add a checklist

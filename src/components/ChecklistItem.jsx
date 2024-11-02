@@ -32,12 +32,13 @@ const ChecklistItem = ({ id }) => {
     };
 
     getCheckListItem();
-  }, [id]);
+  }, []);
 
-  const handleCheckedChange = (itemId, isChecked) => {
+  const handleCheckedChange = (itemId) => {
+    // console.log(isChecked);
     setCheckedItems((prev) => ({
       ...prev,
-      [itemId]: isChecked,
+      [itemId]: ![itemId],
     }));
   };
 
@@ -46,10 +47,8 @@ const ChecklistItem = ({ id }) => {
       {items.map((item) => (
         <Checkbox
           key={item.id}
-          onClick={checkedItems[item.id] || false}
-          onCheckedChange={(e) =>
-            handleCheckedChange(item.id, e.target.checked)
-          }
+          checked={checkedItems[item.id] || false}
+          onCheckedChange={() => handleCheckedChange(item.id)}
         >
           {item.name}
         </Checkbox>
