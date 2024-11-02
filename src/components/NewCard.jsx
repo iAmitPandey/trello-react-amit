@@ -8,7 +8,7 @@ import {
 } from "../components/ui/popover";
 import { Input, Button } from "@chakra-ui/react";
 
-const CreateBoardPopover = ({ creatBoard, name }) => {
+const CreateBoardPopover = ({ creatBoard }) => {
   const [boardName, setBoardName] = useState("");
 
   const handleClick = (e) => {
@@ -22,11 +22,11 @@ const CreateBoardPopover = ({ creatBoard, name }) => {
   return (
     <PopoverRoot>
       <PopoverTrigger asChild>
-        <Button>{name}</Button>
+        <Button>Create a new board</Button>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverBody>
-          <PopoverTitle>{name}</PopoverTitle>
+          <PopoverTitle>Create a new board</PopoverTitle>
           <form onSubmit={handleClick}>
             <Input
               placeholder="Enter board name"

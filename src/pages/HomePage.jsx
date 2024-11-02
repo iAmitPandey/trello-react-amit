@@ -3,6 +3,7 @@ import "../App.css";
 import axios from "axios";
 import NewCard from "../components/NewCard";
 import Board from "../components/Board";
+import { fetchAllBoards } from "../../utils/helper";
 
 const HomePage = () => {
   const [boards, setBoards] = useState(null);
@@ -10,10 +11,9 @@ const HomePage = () => {
   const url = import.meta.env.VITE_URL;
   const trelloToken = import.meta.env.VITE_TRELLO_TOKEN;
   const key = import.meta.env.VITE_API_KEY;
+
   const fetchData = async () => {
-    const res = await axios.get(
-      ` ${url}/members/me/boards?key=${key}&token=${trelloToken}`
-    );
+    const res = await axios.get(fetchAllBoards);
     const data = res.data;
     setBoards(data);
   };
@@ -29,7 +29,6 @@ const HomePage = () => {
           name
         )}&key=${key}&token=${trelloToken}`
       );
-      // setBoards((prev) => [...prev, { name }]);
       setBoards((prev) => [...prev, res.data]);
     } catch (err) {
       console.log("failed to fetch data", err);
@@ -39,7 +38,7 @@ const HomePage = () => {
   return (
     <div style={{ display: "grid" }}>
       <Board boards={boards} />
-      <NewCard creatBoard={creatBoard} name="Create a new board" />
+      <NewCard creatBoard={creatBoard} />
     </div>
   );
 };
