@@ -1,21 +1,31 @@
 import React from "react";
-import { SimpleGrid, Card } from "@chakra-ui/react";
+import { Card, HStack } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 const Board = ({ boards }) => {
   return (
-    <SimpleGrid column={4} minChildWidth="300px" gap="10px" ml="80px">
+    <HStack>
       {boards?.map(
-        (board, id) =>
+        (board) =>
           !board.closed && (
             <Link key={board.id} to={`/boards/${board.id}`}>
-              <Card.Root>
+              <Card.Root
+                size="lg"
+                width="180px"
+                backgroundColor="black"
+                color="white"
+                textAlign="center"
+                height="160px"
+                border="none"
+                justifyContent="center"
+                margin="10px"
+              >
                 <Card.Title>{board.name}</Card.Title>
               </Card.Root>
             </Link>
           )
       )}
-    </SimpleGrid>
+    </HStack>
   );
 };
 

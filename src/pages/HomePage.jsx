@@ -1,44 +1,58 @@
 import React, { useState, useEffect } from "react";
-import "../App.css";
-import axios from "axios";
 import NewCard from "../components/NewCard";
 import Board from "../components/Board";
-import { fetchAllBoards } from "../../utils/helper";
+import "../App.css";
+
+import { Spinner, Box } from "@chakra-ui/react";
+import { fetchAllBoards, createBoard } from "../api/helper";
 
 const HomePage = () => {
   const [boards, setBoards] = useState(null);
-
-  const url = import.meta.env.VITE_URL;
-  const trelloToken = import.meta.env.VITE_TRELLO_TOKEN;
-  const key = import.meta.env.VITE_API_KEY;
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    const res = await axios.get(fetchAllBoards);
-    const data = res.data;
-    setBoards(data);
+    setLoading(true);
+    try {
+      const data = await fetchAllBoards();
+      setBoards(data);
+    } catch (err) {
+      console.log("Failed to fetch boards:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const creatBoard = async (name) => {
+  const handleCreateBoard = async (name) => {
     try {
-      const res = await axios.post(
-        `${url}/boards/?name=${encodeURIComponent(
-          name
-        )}&key=${key}&token=${trelloToken}`
-      );
-      setBoards((prev) => [...prev, res.data]);
+      const newBoard = await createBoard(name);
+      setBoards((prev) => [...prev, newBoard]);
     } catch (err) {
-      console.log("failed to fetch data", err);
+      console.log("Failed to create board:", err);
     }
   };
 
   return (
-    <div style={{ display: "grid" }}>
-      <Board boards={boards} />
-      <NewCard creatBoard={creatBoard} />
+    <div>
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+        >
+          <Spinner size="xl" color="blue.500" />
+        </Box>
+      ) : (
+        <>
+          <Board boards={boards} />
+
+          <NewCard creatBoard={handleCreateBoard} />
+        </>
+      )}
     </div>
   );
 };

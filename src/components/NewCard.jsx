@@ -22,14 +22,14 @@ const CreateBoardPopover = ({ creatBoard }) => {
   return (
     <PopoverRoot>
       <PopoverTrigger asChild>
-        <Button>Create a new board</Button>
+        <Button margin="10px">Create new board</Button>
       </PopoverTrigger>
       <PopoverContent>
-        <PopoverBody>
-          <PopoverTitle>Create a new board</PopoverTitle>
+        <PopoverBody margin="10px">
+          <PopoverTitle>Board Title</PopoverTitle>
           <form onSubmit={handleClick}>
             <Input
-              placeholder="Enter board name"
+              placeholder="Enter board title"
               value={boardName}
               onChange={(e) => setBoardName(e.target.value)}
               mb={4}

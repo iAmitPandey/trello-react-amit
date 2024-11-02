@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchBoard, fetchLists, createList, archiveList } from "../api/helper";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
@@ -25,39 +26,13 @@ const SingleBoardPage = () => {
   const [error, setError] = useState(null);
 
   const { id } = useParams();
-  const url = import.meta.env.VITE_URL;
-  const trelloToken = import.meta.env.VITE_TRELLO_TOKEN;
-  const key = import.meta.env.VITE_API_KEY;
 
-  const getBoard = async () => {
+  const handleCreateList = async () => {
     try {
-      const res = await axios.get(
-        `${url}/boards/${id}?key=${key}&token=${trelloToken}`
-      );
-      setBoard(res.data);
-    } catch (error) {
-      setError("Failed to fetch board data.");
-    }
-  };
-
-  const getList = async () => {
-    try {
-      const res = await axios.get(
-        `${url}/boards/${id}/lists?key=${key}&token=${trelloToken}`
-      );
-      setLists(res.data);
-    } catch (error) {
-      setError("Failed to fetch lists.");
-    }
-  };
-
-  const createAList = async () => {
-    try {
-      await axios.post(
-        `${url}/lists?name=${listName}&idBoard=${id}&key=${key}&token=${trelloToken}`
-      );
+      await createList(id, listName);
       setListName("");
-      getList();
+      const updatedLists = await fetchLists(id);
+      setLists(updatedLists.data);
     } catch (error) {
       setError("Error creating list.");
     }
@@ -65,18 +40,25 @@ const SingleBoardPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await getBoard();
-      await getList();
-      setLoading(false);
+      try {
+        const boardResponse = await fetchBoard(id);
+        setBoard(boardResponse.data);
+
+        const listsResponse = await fetchLists(id);
+        setLists(listsResponse.data);
+      } catch (error) {
+        setError("Failed to fetch board data.");
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchData();
   }, []);
 
-  const archiveList = async (listId) => {
+  const handleArchiveList = async (listId) => {
     try {
-      await axios.put(
-        `${url}/lists/${listId}/closed?value=true&key=${key}&token=${trelloToken}`
-      );
+      await archiveList(listId);
       setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
     } catch (error) {
       setError("Error archiving list.");
@@ -96,7 +78,7 @@ const SingleBoardPage = () => {
           <Card.Title>
             {list.name}
             <Button
-              onClick={() => archiveList(list.id)}
+              onClick={() => handleArchiveList(list.id)}
               colorScheme="red"
               size="xs"
               ml="2"
@@ -128,7 +110,7 @@ const SingleBoardPage = () => {
           />
           <Flex justify="flex-start">
             <Button
-              onClick={createAList}
+              onClick={handleCreateList}
               colorScheme="blue"
               bg="rgb(87, 157, 255)"
               size="xs"

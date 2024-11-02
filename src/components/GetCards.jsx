@@ -10,7 +10,6 @@ const GetCards = ({ list }) => {
   const [cards, setCards] = useState([]);
   const [cardName, setCardName] = useState("");
   const [createACard, setCreateAcard] = useState(false);
-  const [check, setCheck] = useState(false);
   const url = import.meta.env.VITE_URL;
   const trelloToken = import.meta.env.VITE_TRELLO_TOKEN;
   const key = import.meta.env.VITE_API_KEY;
