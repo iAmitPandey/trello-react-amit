@@ -122,15 +122,15 @@ const Checklist = ({ name, id }) => {
           {loading.fetch ? (
             <Spinner size="lg" />
           ) : (
-            checkList?.map((listItem) => (
-              <Box key={listItem.id}>
+            checkList?.map((list) => (
+              <Box key={list.id}>
                 <HStack>
                   <Card.Root>
                     <Card.Title>
-                      {listItem.name}
+                      {list.name}
                       <Button
-                        onClick={() => deleteChecklist(listItem.id)}
-                        isLoading={loading.deleteChecklist === listItem.id}
+                        onClick={() => deleteChecklist(list.id)}
+                        isLoading={loading.deleteChecklist === list.id}
                       >
                         <MdDelete />
                       </Button>
@@ -138,7 +138,11 @@ const Checklist = ({ name, id }) => {
 
                     {addItem ? (
                       <Card.Body>
-                        <ChecklistItem id={listItem.id} />
+                        <ChecklistItem
+                          id={list.id}
+                          cardId={id}
+                          deleteChecklistItem={deleteChecklistItem}
+                        />
                         <Input
                           placeholder="Enter an item"
                           value={itemName}
@@ -147,7 +151,7 @@ const Checklist = ({ name, id }) => {
                           mb="2"
                         />
                         <Button
-                          onClick={() => addItemInChecklist(listItem.id)}
+                          onClick={() => addItemInChecklist(list.id)}
                           isLoading={loading.addItem}
                         >
                           Add
@@ -155,7 +159,11 @@ const Checklist = ({ name, id }) => {
                       </Card.Body>
                     ) : (
                       <Card.Body>
-                        <ChecklistItem id={listItem.id} />
+                        <ChecklistItem
+                          id={list.id}
+                          cardId={id}
+                          deleteChecklistItem={deleteChecklistItem}
+                        />
                         <Button onClick={() => setAddItem(true)}>
                           Add an item
                         </Button>
