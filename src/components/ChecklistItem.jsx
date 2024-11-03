@@ -1,29 +1,22 @@
-import { Checkbox } from "./ui/checkbox";
 import { useState, useEffect } from "react";
-import React from "react";
-import axios from "axios";
+import { Checkbox } from "./ui/checkbox";
 import { Box, HStack, Text } from "@chakra-ui/react";
 import { ProgressBar, ProgressRoot } from "./ui/progress";
 import { MdDelete } from "react-icons/md";
+
+import { fetchChecklistItems, updateChecklistItemState } from "../api/helper";
 
 const ChecklistItem = ({ id, deleteChecklistItem, cardId }) => {
   const [items, setItems] = useState([]);
   const [checkedItems, setCheckedItems] = useState({});
 
-  const url = import.meta.env.VITE_URL;
-  const treloToken = import.meta.env.VITE_TRELLO_TOKEN;
-  const key = import.meta.env.VITE_API_KEY;
-
   useEffect(() => {
-    const getCheckListItem = async () => {
+    const getChecklistItems = async () => {
       try {
-        const res = await axios.get(
-          `${url}/checklists/${id}/checkItems?key=${key}&token=${treloToken}`
-        );
-        setItems(res.data);
+        const data = await fetchChecklistItems(id);
+        setItems(data);
 
-        // Initialize the checked state for each item
-        const initialCheckedState = res.data.reduce((acc, item) => {
+        const initialCheckedState = data.reduce((acc, item) => {
           acc[item.id] = item.state === "complete";
           return acc;
         }, {});
@@ -34,8 +27,8 @@ const ChecklistItem = ({ id, deleteChecklistItem, cardId }) => {
       }
     };
 
-    getCheckListItem();
-  }, [id, url, key, treloToken]);
+    getChecklistItems();
+  }, []);
 
   const handleCheckedChange = async (itemId, isChecked) => {
     setCheckedItems((prev) => ({
@@ -44,13 +37,12 @@ const ChecklistItem = ({ id, deleteChecklistItem, cardId }) => {
     }));
 
     try {
-      await axios.put(
-        `${url}/cards/${cardId}/checklist/${id}/checkItem/${itemId}?key=${key}&token=${treloToken}`,
-        {
-          state: isChecked ? "complete" : "incomplete",
-        }
+      await updateChecklistItemState(
+        cardId,
+        id,
+        itemId,
+        isChecked ? "complete" : "incomplete"
       );
-
       setItems((prevItems) =>
         prevItems.map((item) =>
           item.id === itemId
@@ -65,14 +57,12 @@ const ChecklistItem = ({ id, deleteChecklistItem, cardId }) => {
 
   const getCheckItemsPercentage = (items) => {
     if (!items.length) return 0;
-    let checkItemCount = 0;
-    items.forEach((item) => {
-      if (item.state === "complete") {
-        checkItemCount++;
-      }
-    });
+    const checkItemCount = items.filter(
+      (item) => item.state === "complete"
+    ).length;
     return (checkItemCount * 100) / items.length;
   };
+
   const percent = Math.ceil(getCheckItemsPercentage(items));
 
   return (

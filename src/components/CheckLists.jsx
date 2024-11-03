@@ -9,9 +9,15 @@ import { HiOutlinePlus } from "react-icons/hi";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import axios from "axios";
 
 import ChecklistItem from "./ChecklistItem";
+import {
+  createChecklist,
+  fetchChecklists,
+  deleteChecklist,
+  addItemToChecklist,
+  deleteChecklistItem,
+} from "../api/helper";
 
 const Checklist = ({ name, id }) => {
   const [open, setOpen] = useState(false);
@@ -27,16 +33,10 @@ const Checklist = ({ name, id }) => {
     addItem: false,
   });
 
-  const url = import.meta.env.VITE_URL;
-  const treloToken = import.meta.env.VITE_TRELLO_TOKEN;
-  const key = import.meta.env.VITE_API_KEY;
-
   const createCheckList = async () => {
     setLoading((prev) => ({ ...prev, create: true }));
     try {
-      await axios.post(
-        `${url}/cards/${id}/checklists?name=${checkListName}&key=${key}&token=${treloToken}`
-      );
+      await createChecklist(id, checkListName);
       setCheckListName("");
       getCheckList();
     } catch (error) {
@@ -49,10 +49,8 @@ const Checklist = ({ name, id }) => {
   const getCheckList = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
-      const res = await axios.get(
-        `${url}/cards/${id}/checklists?key=${key}&token=${treloToken}`
-      );
-      setCheckList(res.data);
+      const data = await fetchChecklists(id);
+      setCheckList(data);
     } catch (error) {
       console.log("Error fetching checklists", error);
     } finally {
@@ -67,12 +65,10 @@ const Checklist = ({ name, id }) => {
     }
   };
 
-  const deleteChecklist = async (checklistId) => {
+  const deleteChecklistHandler = async (checklistId) => {
     setLoading((prev) => ({ ...prev, deleteChecklist: checklistId }));
     try {
-      await axios.delete(
-        `${url}/checklists/${checklistId}?key=${key}&token=${treloToken}`
-      );
+      await deleteChecklist(checklistId);
       getCheckList();
     } catch (error) {
       console.log("Error deleting checklist", error);
@@ -84,9 +80,7 @@ const Checklist = ({ name, id }) => {
   const addItemInChecklist = async (checklistId) => {
     setLoading((prev) => ({ ...prev, addItem: true }));
     try {
-      await axios.post(
-        `${url}/checklists/${checklistId}/checkItems?name=${itemName}&key=${key}&token=${treloToken}`
-      );
+      await addItemToChecklist(checklistId, itemName);
       setItemName("");
       getCheckList();
     } catch (error) {
@@ -96,12 +90,10 @@ const Checklist = ({ name, id }) => {
     }
   };
 
-  const deleteChecklistItem = async (checklistId, itemId) => {
+  const deleteChecklistItemHandler = async (checklistId, itemId) => {
     setLoading((prev) => ({ ...prev, deleteItem: itemId }));
     try {
-      await axios.delete(
-        `${url}/checklists/${checklistId}/checkItems/${itemId}?key=${key}&token=${treloToken}`
-      );
+      await deleteChecklistItem(checklistId, itemId);
       getCheckList();
     } catch (error) {
       console.log("Error deleting checklist item", error);
@@ -129,7 +121,7 @@ const Checklist = ({ name, id }) => {
                     <Card.Title>
                       {list.name}
                       <Button
-                        onClick={() => deleteChecklist(list.id)}
+                        onClick={() => deleteChecklistHandler(list.id)}
                         isLoading={loading.deleteChecklist === list.id}
                       >
                         <MdDelete />
@@ -141,7 +133,7 @@ const Checklist = ({ name, id }) => {
                         <ChecklistItem
                           id={list.id}
                           cardId={id}
-                          deleteChecklistItem={deleteChecklistItem}
+                          deleteChecklistItem={deleteChecklistItemHandler}
                         />
                         <Input
                           placeholder="Enter an item"
@@ -162,7 +154,7 @@ const Checklist = ({ name, id }) => {
                         <ChecklistItem
                           id={list.id}
                           cardId={id}
-                          deleteChecklistItem={deleteChecklistItem}
+                          deleteChecklistItem={deleteChecklistItemHandler}
                         />
                         <Button onClick={() => setAddItem(true)}>
                           Add an item

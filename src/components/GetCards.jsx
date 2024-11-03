@@ -2,40 +2,34 @@ import React, { useEffect, useState } from "react";
 import { Card, Button, Input, Box, HStack } from "@chakra-ui/react";
 import { HiOutlinePlus } from "react-icons/hi";
 import { FaPlus } from "react-icons/fa";
-import CheckListWindow from "./CheckLists";
-import axios from "axios";
 import { MdDelete } from "react-icons/md";
+
+import CheckListWindow from "./CheckLists";
+import { fetchCards, createCard, removeCard } from "../api/helper";
 
 const GetCards = ({ list }) => {
   const [cards, setCards] = useState([]);
   const [cardName, setCardName] = useState("");
   const [createACard, setCreateAcard] = useState(false);
-  const url = import.meta.env.VITE_URL;
-  const trelloToken = import.meta.env.VITE_TRELLO_TOKEN;
-  const key = import.meta.env.VITE_API_KEY;
 
   useEffect(() => {
-    getCards(list.id);
+    const loadCards = async () => {
+      try {
+        const data = await fetchCards(list.id);
+        setCards(data);
+      } catch (error) {
+        console.log("Error loading cards", error);
+      }
+    };
+    loadCards();
   }, []);
-
-  const getCards = async (id) => {
-    try {
-      const res = await axios.get(
-        `${url}/lists/${id}/cards?key=${key}&token=${trelloToken}`
-      );
-      setCards(res.data);
-    } catch (error) {
-      console.log("Error fetching cards", error);
-    }
-  };
 
   const addACard = async () => {
     try {
-      await axios.post(
-        `${url}/cards?idList=${list.id}&name=${cardName}&key=${key}&token=${trelloToken}`
-      );
+      await createCard(list.id, cardName);
       setCardName("");
-      getCards(list.id); // Refresh the list of cards
+      const updatedCards = await fetchCards(list.id);
+      setCards(updatedCards);
     } catch (error) {
       console.log("Error creating a new card", error);
     }
@@ -43,10 +37,10 @@ const GetCards = ({ list }) => {
 
   const deleteCard = async (id) => {
     try {
-      await axios.delete(`${url}/cards/${id}?key=${key}&token=${trelloToken}`);
+      await removeCard(id);
       setCards((prev) => prev.filter((card) => card.id !== id));
     } catch (error) {
-      console.log("Error in deletion", error);
+      console.log("Error deleting card", error);
     }
   };
 
