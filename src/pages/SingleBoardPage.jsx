@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { fetchBoard, fetchLists, createList, archiveList } from "../api/helper";
-import axios from "axios";
 import { useParams } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 
@@ -12,10 +11,12 @@ import {
   Flex,
   Spinner,
   Text,
+  HStack,
 } from "@chakra-ui/react";
-import GetCards from "../components/GetCards";
 import { MdOutlineCancel } from "react-icons/md";
 import { FaPlus } from "react-icons/fa";
+
+import Cards from "../components/Cards";
 
 const SingleBoardPage = () => {
   const [board, setBoard] = useState(null);
@@ -70,26 +71,21 @@ const SingleBoardPage = () => {
 
   return (
     <>
-      <Card.Root>
-        <Card.Title>{board?.name}</Card.Title>
-      </Card.Root>
+      <HStack
+        style={{
+          backgroundColor: "#242f42",
+          color: "white",
+          marginBottom: "16px",
+        }}
+      >
+        <Box>{board?.name}</Box>
+      </HStack>
       {lists?.map((list) => (
-        <Card.Root maxW="sm" overflow="hidden" key={list.id}>
-          <Card.Title>
-            {list.name}
-            <Button
-              onClick={() => handleArchiveList(list.id)}
-              colorScheme="red"
-              size="xs"
-              ml="2"
-            >
-              <MdDelete />
-            </Button>
-          </Card.Title>
-          <Card.Body gap="2">
-            <GetCards list={list} />
-          </Card.Body>
-        </Card.Root>
+        <Cards
+          key={list.id}
+          list={list}
+          handleArchiveList={handleArchiveList}
+        />
       ))}
       {addList ? (
         <Box
